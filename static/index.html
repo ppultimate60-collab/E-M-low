@@ -1,0 +1,334 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ED Flow V3 — AI Investigations</title>
+<style>
+:root{--bg:#f4f7fb;--card:#fff;--ink:#162033;--muted:#667085;--blue:#2563eb;--red:#dc2626;--amber:#d97706;--green:#15803d;--line:#d9e0ea}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);font-family:Arial,sans-serif;color:var(--ink)}header{background:#111827;color:#fff;padding:16px 18px;font-size:20px;font-weight:800;position:sticky;top:0;z-index:5}.wrap{max-width:1100px;margin:auto;padding:16px}.tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}.tabs button,.btn{border:0;border-radius:10px;padding:11px 14px;font-weight:700;background:#fff;color:var(--ink);box-shadow:0 1px 4px #0001}.tabs button.on,.btn.primary{background:var(--blue);color:#fff}.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px;margin-bottom:14px;box-shadow:0 2px 10px #00000008}.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.grid3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}.field label{display:block;font-size:13px;font-weight:800;color:#475467;margin:0 0 6px}.field input,.field select,.field textarea{width:100%;padding:11px;border:1px solid #cbd5e1;border-radius:10px;font:inherit;background:#fff}.field textarea{min-height:90px;resize:vertical}.full{grid-column:1/-1}.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}.pill{display:inline-block;padding:6px 10px;border-radius:999px;font-size:12px;font-weight:800}.red{background:#fee2e2;color:#991b1b}.urgent{background:#fef3c7;color:#92400e}.stable{background:#dcfce7;color:#166534}.muted{color:var(--muted)}.hidden{display:none!important}.scorebox{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px}.score{padding:12px;border:1px solid var(--line);border-radius:12px;background:#fafafa}.score b{display:block;font-size:20px}.alert{padding:12px;border-radius:12px;background:#fff7ed;border:1px solid #fed7aa;margin-top:10px}.success{background:#ecfdf3;border-color:#bbf7d0}.danger{background:#fef2f2;border-color:#fecaca}.invest{border-left:5px solid var(--blue)}.filelink{display:inline-block;margin-top:6px;color:#1d4ed8;font-weight:700}.small{font-size:12px}.aiGrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.aiItem{padding:11px;border:1px solid var(--line);border-radius:12px;background:#fbfdff}.aiTitle{font-weight:800;margin-bottom:5px}.confidence{font-size:11px;font-weight:800;padding:3px 7px;border-radius:999px;background:#eef2ff;color:#3730a3}.ecgPreview{max-width:100%;max-height:420px;border:1px solid var(--line);border-radius:12px;margin-top:10px}@media(max-width:700px){.aiGrid{grid-template-columns:1fr}}.patientrow{display:flex;justify-content:space-between;gap:10px;align-items:center;padding:12px;border:1px solid var(--line);border-radius:12px;margin:8px 0;background:#fff}.checkgrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.check{padding:9px;border:1px solid var(--line);border-radius:10px}.check input{margin-right:7px}@media(max-width:700px){.grid,.grid3,.scorebox,.checkgrid{grid-template-columns:1fr}.patientrow{align-items:flex-start;flex-direction:column}}
+@media print{header,.tabs,.no-print{display:none!important}.card{box-shadow:none}.wrap{max-width:none}}
+</style>
+</head>
+<body>
+<header>🚑 ED Flow V3 — AI Investigations & Treatment Support</header>
+<div class="wrap">
+<div class="tabs no-print">
+<button class="on" onclick="show('dash',this)">🏠 Dashboard</button>
+<button onclick="newPatient()">➕ New Patient</button>
+<button onclick="show('patients',this);loadPatients()">📂 Previous Patients</button>
+<button onclick="show('about',this)">ℹ️ About</button>
+</div>
+
+<section id="dash" class="card">
+<h2>Emergency Department Dashboard</h2>
+<div class="grid3">
+<div class="card"><div class="muted">Total patients</div><h2 id="dTotal">0</h2></div>
+<div class="card"><div class="muted">RED / high concern</div><h2 id="dRed">0</h2></div>
+<div class="card"><div class="muted">URGENT</div><h2 id="dUrgent">0</h2></div>
+</div>
+<h3>Recent patients</h3><div id="recent"></div>
+</section>
+
+<section id="new" class="hidden">
+<div class="card">
+<h2>Patient Assessment</h2>
+<div class="grid">
+<div class="field"><label>Patient code</label><input id="code" placeholder="Auto if blank"></div>
+<div class="field"><label>Name / Identifier</label><input id="name"></div>
+<div class="field"><label>Age</label><input id="age" type="number" min="0"></div>
+<div class="field"><label>Sex</label><select id="sex"><option>Male</option><option>Female</option><option>Other</option></select></div>
+<div class="field"><label>Patient type</label><select id="ptype" onchange="renderPathway()">
+<option>Trauma</option><option>Chest Pain / ACS</option><option>Asthma/COPD/Breathlessness</option><option>Fever/Sepsis</option><option>Stroke/Neurology</option><option>DKA/HHS/Metabolic</option><option>GI Bleed</option><option>Abdominal Pain</option><option>Poisoning/Toxicology</option><option>Seizure</option><option>Undifferentiated/Other</option>
+</select></div>
+<div class="field full"><label>Chief complaint</label><input id="cc"></div>
+<div class="field full"><label>History / HPI</label><textarea id="history"></textarea></div>
+<div class="field full"><label>Focused examination</label><textarea id="exam"></textarea></div>
+</div>
+
+<h3>Vitals / ABCDE</h3>
+<div class="grid3">
+<div class="field"><label>RR /min</label><input id="rr" type="number"></div>
+<div class="field"><label>SpO₂ %</label><input id="spo2" type="number"></div>
+<div class="field"><label>SBP mmHg</label><input id="sbp" type="number"></div>
+<div class="field"><label>HR /min</label><input id="hr" type="number"></div>
+<div class="field"><label>Temperature °C</label><input id="temp" type="number" step="0.1"></div>
+<div class="field"><label>GCS</label><input id="gcs" type="number" value="15" min="3" max="15"></div>
+</div>
+<h3>📊 Diagnosis-specific score inputs</h3><p class="muted small">Enter documented findings only. Scores remain incomplete when required data are missing.</p><div class="grid3">
+<div class="field"><label>Troponin (numeric)</label><input id="troponin" type="number" step="0.01"></div><div class="field"><label>HEART history 0–2</label><input id="heartHistory" type="number" min="0" max="2"></div><div class="field"><label>HEART ECG 0–2</label><input id="heartECG" type="number" min="0" max="2"></div><div class="field"><label>HEART risk factors 0–2</label><input id="heartRF" type="number" min="0" max="2"></div><div class="field"><label>DBP mmHg</label><input id="dbp" type="number"></div><div class="field"><label>Urea mmol/L</label><input id="urea" type="number" step="0.1"></div><div class="field"><label>Hb g/dL</label><input id="hb" type="number" step="0.1"></div><div class="field"><label>TIA duration min</label><input id="tiaDuration" type="number"></div><div class="field"><label>Confusion</label><select id="confusion"><option value="">Unknown</option><option value="false">No</option><option value="true">Yes</option></select></div></div><div class="checkgrid"><label class="check"><input id="dvtSigns" type="checkbox"> DVT signs</label><label class="check"><input id="peLikely" type="checkbox"> PE most likely</label><label class="check"><input id="surgeryImmobilization" type="checkbox"> Recent surgery/immobilization</label><label class="check"><input id="previousVte" type="checkbox"> Previous VTE</label><label class="check"><input id="hemoptysis" type="checkbox"> Hemoptysis</label><label class="check"><input id="malignancy" type="checkbox"> Active malignancy</label><label class="check"><input id="unilateralWeakness" type="checkbox"> TIA unilateral weakness</label><label class="check"><input id="speechOnly" type="checkbox"> TIA speech-only</label><label class="check"><input id="diabetes" type="checkbox"> Diabetes</label><label class="check"><input id="melena" type="checkbox"> Melena</label><label class="check"><input id="syncope" type="checkbox"> Syncope</label><label class="check"><input id="hepatic" type="checkbox"> Hepatic disease</label><label class="check"><input id="cardiacFailure" type="checkbox"> Cardiac failure</label></div><div id="scoreBox" class="card"></div>
+<h3>🚨 Disease-specific red flags</h3>
+<div id="flags" class="checkgrid"></div>
+<div id="riskBox" class="alert"></div>
+
+<div class="actions no-print">
+<button class="btn primary" onclick="savePatient()">💾 Save / Update Patient</button>
+<button class="btn" onclick="calcAndShow()">🧮 Calculate Scores & AI Assessment</button>
+<button class="btn" onclick="printReport()">🖨️ Report / PDF</button>
+</div>
+</div>
+
+<div id="aiBox" class="card hidden"></div>
+
+<div class="card">
+<h2>🧪 Investigations for this patient</h2>
+<p class="muted">Attach ABG/VBG, ECG, RBS and ketone results to this specific patient. Images/PDFs up to 10 MB are supported in this demo.</p>
+<div class="grid">
+<div class="field"><label>Investigation type</label><select id="ikind" onchange="toggleInvFields()">
+<option>ABG</option><option>VBG</option><option>ECG</option><option>RBS</option><option>Blood Ketone</option><option>Urine Ketone</option><option>Other</option>
+</select></div>
+<div class="field"><label>Upload image/PDF (optional)</label><input id="ifile" type="file" accept="image/*,.pdf"></div>
+<div id="abgFields" class="full grid3">
+<div class="field"><label>pH</label><input id="ph" type="number" step="0.01"></div>
+<div class="field"><label>PaCO₂ / PvCO₂ mmHg</label><input id="pco2" type="number" step="0.1"></div>
+<div class="field"><label>PaO₂ / PvO₂ mmHg</label><input id="po2" type="number" step="0.1"></div>
+<div class="field"><label>HCO₃⁻ mmol/L</label><input id="hco3" type="number" step="0.1"></div>
+<div class="field"><label>Lactate mmol/L</label><input id="lactate" type="number" step="0.1"></div>
+<div class="field"><label>Base excess</label><input id="be" type="number" step="0.1"></div>
+<div class="field"><label>Na⁺ mmol/L</label><input id="na" type="number" step="0.1"></div>
+<div class="field"><label>Cl⁻ mmol/L</label><input id="cl" type="number" step="0.1"></div>
+<div class="field"><label>K⁺ mmol/L</label><input id="k" type="number" step="0.1"></div>
+</div>
+<div id="glucoseFields" class="full hidden grid3">
+<div class="field"><label>RBS mg/dL</label><input id="rbs" type="number" step="1"></div>
+<div class="field"><label>β-hydroxybutyrate mmol/L</label><input id="bho" type="number" step="0.1"></div>
+<div class="field"><label>Urine ketone</label><select id="urineKetone"><option>Not tested</option><option>Negative</option><option>Trace</option><option>1+</option><option>2+</option><option>3+</option></select></div>
+</div>
+<div class="field full"><label>Investigation note</label><textarea id="inote" placeholder="ECG interpretation / other result / lab note"></textarea></div>
+</div>
+<div class="actions no-print"><button class="btn primary" onclick="saveInvestigation()">➕ Save Investigation</button></div>
+<div id="invList"></div>
+</div>
+
+<div class="card">
+<h2>❤️ ECG AI Interpretation</h2>
+<p class="muted">Upload a clear 12-lead ECG image. The AI will analyze it systematically and display uncertainty/quality limitations. Always verify the tracing yourself.</p>
+<div class="grid">
+<div class="field"><label>ECG image</label><input id="ecgAiFile" type="file" accept="image/*" onchange="previewECG()"></div>
+<div class="field"><label>Clinical question (optional)</label><input id="ecgQuestion" placeholder="e.g. chest pain, palpitations, syncope"></div>
+</div>
+<img id="ecgPreview" class="ecgPreview hidden" alt="ECG preview">
+<div class="actions no-print"><button class="btn primary" onclick="runECGAI()">❤️ Analyze ECG with AI</button></div>
+<div id="ecgAIBox" class="hidden"></div>
+</div>
+
+<div id="report" class="card hidden"></div>
+</section>
+
+<section id="patients" class="card hidden">
+<h2>Previous Patients</h2>
+<div class="field"><label>Search</label><input id="search" oninput="loadPatients()" placeholder="Name, code, complaint..."></div>
+<div id="patientList"></div>
+</section>
+
+<section id="about" class="card hidden">
+<h2>ED Flow V3</h2>
+<p>This version adds patient-linked investigations and automated clinical decision support.</p>
+<ul><li>ABG/VBG image + structured values</li><li>ECG upload + note</li><li>RBS and ketone tracking</li><li>Automatic scores and safety alerts</li><li>Automated treatment-support suggestions</li><li>Patient-specific investigation timeline</li><li>Printable report</li></ul>
+<div class="alert danger"><b>Clinical safety:</b> This is a prototype. Treatment suggestions are decision support, not autonomous prescribing. Verify all results, doses, contraindications and local protocols. Do not use unvalidated output as the sole basis for patient care.</div>
+</section>
+</div>
+
+<script>
+let currentId=null, currentData=null, flagsMap={
+"Trauma":["Airway threat","Major hemorrhage","GCS ≤8","Shock / hypotension","Chest trauma / tension pneumothorax","Pelvic instability"],
+"Chest Pain / ACS":["Ongoing severe chest pain","ST-elevation / STEMI concern","Shock / hypotension","Malignant arrhythmia","Syncope"],
+"Asthma/COPD/Breathlessness":["Silent chest","Severe work of breathing","Exhaustion / altered sensorium","SpO₂ dangerously low","Hypercapnia concern"],
+"Fever/Sepsis":["Hypotension","Altered mental status","Mottled / poor perfusion","High lactate concern","Suspected source with organ dysfunction"],
+"Stroke/Neurology":["Airway compromise","Reduced GCS","New focal deficit","Seizure","Last-known-well concern"],
+"DKA/HHS/Metabolic":["Hypotension / shock","Altered sensorium","Severe acidosis concern","K⁺ abnormality","Persistent vomiting"],
+"GI Bleed":["Shock","Active hematemesis","Melena with instability","Syncope","Severe anemia concern"],
+"Abdominal Pain":["Peritonitis","Shock","GI bleed","Pain out of proportion","Pregnancy concern"],
+"Poisoning/Toxicology":["Airway threat","Reduced GCS","Seizure","Arrhythmia / wide QRS","Shock"],
+"Seizure":["Status epilepticus","Airway compromise","Persistent low GCS","Hypoglycemia concern","Focal deficit"],
+"Undifferentiated/Other":["Airway threat","Breathing failure","Circulatory shock","Altered mental status","Rapid deterioration"]
+};
+
+function $(id){return document.getElementById(id)}
+function show(id,btn){
+  ["dash","new","patients","about"].forEach(x=>$(x).classList.add("hidden"));
+  $(id).classList.remove("hidden");
+  document.querySelectorAll(".tabs button").forEach(b=>b.classList.remove("on"));
+  if(btn)btn.classList.add("on");
+}
+function newPatient(){currentId=null;currentData=null;clearForm();show("new",document.querySelectorAll(".tabs button")[1]);renderPathway();toggleInvFields();$("aiBox").classList.add("hidden");$("invList").innerHTML="";$("ecgAIBox").classList.add("hidden")}
+function renderPathway(){
+  const p=$("ptype").value; $("flags").innerHTML=(flagsMap[p]||[]).map((x,i)=>`<label class="check"><input type="checkbox" data-flag="${x}"> ${x}</label>`).join("");
+}
+function clearForm(){
+  ["code","name","age","cc","history","exam","rr","spo2","sbp","hr","temp"].forEach(id=>$(id).value="");
+  $("gcs").value=15;$("sex").value="Male";$("ptype").value="Undifferentiated/Other";
+}
+function news2(v){
+ let s=0,n=+v.rr,sp=+v.spo2,sy=+v.sbp,h=+v.hr,t=+v.temp,g=+v.gcs;
+ if(n){if(n<=8)s+=3;else if(n<=11)s+=1;else if(n<=20)s+=0;else if(n<=24)s+=2;else s+=3}
+ if(sp){if(sp<=91)s+=3;else if(sp<=93)s+=2;else if(sp<=95)s+=1}
+ if(sy){if(sy<=90)s+=3;else if(sy<=100)s+=2;else if(sy<=110)s+=1;else if(sy>=220)s+=3}
+ if(h){if(h<=40)s+=3;else if(h<=50)s+=1;else if(h<=90)s+=0;else if(h<=110)s+=1;else if(h<=130)s+=2;else s+=3}
+ if(t){if(t<=35)s+=3;else if(t<=36)s+=1;else if(t<=38)s+=0;else if(t<=39)s+=1;else s+=2}
+ if(g<15)s+=3; return s;
+}
+function selectedFlags(){return [...document.querySelectorAll("#flags input:checked")].map(x=>x.dataset.flag)}
+function riskOf(score,flags){if(flags.length||score>=7)return "RED";if(score>=5)return "URGENT";return "STABLE"}
+function formData(){
+ const v={rr:$("rr").value,spo2:$("spo2").value,sbp:$("sbp").value,hr:$("hr").value,temp:$("temp").value,gcs:$("gcs").value};
+ const fl=selectedFlags(), sc=news2(v), risk=riskOf(sc,fl);
+ return {patient_code:$("code").value,name:$("name").value,age:$("age").value||null,sex:$("sex").value,patient_type:$("ptype").value,chief_complaint:$("cc").value,
+ history:{hpi:$("history").value},examination:{focused:$("exam").value},vitals:v,red_flags:{selected:fl},news2:sc,risk,score_inputs:scoreInputs(),provisional_diagnosis:($("aiBox").dataset.dx||"")};
+}
+function scoreInputs(){const b=id=>$(id)?.checked||false,v=id=>$(id)?.value||"";return {troponin:v("troponin"),heart_history:v("heartHistory"),heart_ecg:v("heartECG"),heart_risk_factors:v("heartRF"),dbp:v("dbp"),urea_mmol:v("urea"),hb_gdl:v("hb"),tia_duration_min:v("tiaDuration"),confusion:$("confusion").value==="true",dvt_signs:b("dvtSigns"),pe_most_likely:b("peLikely"),recent_surgery_immobilization:b("surgeryImmobilization"),previous_vte:b("previousVte"),hemoptysis:b("hemoptysis"),malignancy:b("malignancy"),abcdn_unilateral_weakness:b("unilateralWeakness"),abcdn_speech_without_weakness:b("speechOnly"),diabetes:b("diabetes"),melena:b("melena"),syncope:b("syncope"),hepatic_disease:b("hepatic"),cardiac_failure:b("cardiacFailure")};}
+function renderScoreSummary(sc){$("scoreBox").innerHTML='<h3>Calculated clinical scores</h3><div class="scorebox">'+Object.entries(sc||{}).map(([k,x])=>'<div class="score"><b>'+escapeHtml(k)+'</b><div>'+(x.score!==null&&x.score!==undefined?escapeHtml(String(x.score)):x.positive!==null&&x.positive!==undefined?escapeHtml(String(x.positive)):"Incomplete")+'</div><span class="small">'+(x.complete?'Complete':'Missing required inputs')+'</span></div>').join('')+'</div><p class="muted small">Only relevant, complete scores should influence clinical reasoning. Scores are decision aids, not standalone diagnoses.</p>';}
+async function calcAndShow(){
+ const d=formData();
+ try{const sr=await fetch("/api/scores",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(d)});const sj=await sr.json();renderScoreSummary(sj.scores||{});}catch(e){}
+ const inv=window.invCache||[];
+ d.investigations=inv.map(x=>({kind:x.kind,data:x.data||{},note:(x.data||{}).note||"",filename:x.filename||""}));
+ // First show deterministic safety screen immediately.
+ const local=localClinicalScreen(d,inv);
+ renderLocalScreen(local,d);
+ try{
+   const r=await fetch('/api/ai/assessment',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(d)});
+   const j=await r.json();
+   if(r.ok && j.result){renderAIResult(j.result,d);}
+   else {showAIUnavailable(j.error||'AI assessment unavailable.');}
+ }catch(e){showAIUnavailable('Unable to reach the AI service.');}
+ updateRiskBox(d); return d;
+}
+function localClinicalScreen(d,inv){
+ const missing=[]; if(!d.chief_complaint)missing.push('Chief complaint');
+ ['rr','spo2','sbp','hr'].forEach(k=>{if(!d.vitals[k])missing.push(k.toUpperCase())});
+ if(d.patient_type==='Chest Pain / ACS'&&!inv.some(x=>x.kind==='ECG'))missing.push('12-lead ECG');
+ if(d.patient_type==='DKA/HHS/Metabolic'&&!inv.some(x=>x.kind==='RBS'))missing.push('RBS/glucose');
+ const red=d.red_flags.selected||[];
+ const immediate=[]; if(d.risk==='RED'||red.length)immediate.push('Repeat ABCDE and address the selected red flag/time-critical physiology first.');
+ return {missing,immediate};
+}
+function renderLocalScreen(x,d){
+ $('aiBox').classList.remove('hidden');
+ $('aiBox').innerHTML=`<h2>🤖 AI Provisional Diagnosis & Initial Treatment</h2><div class="alert ${d.risk==='RED'?'danger':d.risk==='STABLE'?'success':''}"><b>Safety screen:</b> ${d.risk} · NEWS2 ${d.news2}</div><div class="aiGrid"><div class="aiItem"><div class="aiTitle">Immediate priorities</div>${x.immediate.map(z=>`<div>• ${escapeHtml(z)}</div>`).join('')||'<div>No automatic immediate priority identified from entered fields.</div>'}</div><div class="aiItem"><div class="aiTitle">Missing information</div>${x.missing.map(z=>`<div>• ${escapeHtml(z)}</div>`).join('')||'<div>No major missing field detected.</div>'}</div></div><p class="muted small">Running patient-specific AI reasoning…</p>`;
+}
+function renderAIResult(r,d){
+ const wd=r.working_diagnosis||{}; const dif=r.differential_diagnoses||[]; const mm=r.red_flags_and_must_not_miss||[]; const tx=r.initial_treatment||[]; const tests=r.recommended_investigations||[];
+ const li=a=>Array.isArray(a)&&a.length?a.map(x=>`<li>${escapeHtml(typeof x==='string'?x:(x.action||x.test||x.condition||x.diagnosis||JSON.stringify(x)))}</li>`).join(''):'<li>None identified from available information.</li>';
+ $('aiBox').dataset.dx=wd.diagnosis||'';
+ $('aiBox').innerHTML=`<h2>🤖 AI Provisional Diagnosis & Initial Treatment</h2>
+ <div class="alert ${d.risk==='RED'?'danger':d.risk==='STABLE'?'success':''}"><b>Risk:</b> ${d.risk} · NEWS2 ${d.news2}</div>
+ <div class="card"><h3>1. Most likely provisional diagnosis</h3><h2>${escapeHtml(wd.diagnosis||'Undifferentiated emergency')}</h2><p>${escapeHtml(wd.reasoning||'')}</p><span class="confidence">Confidence: ${escapeHtml(wd.confidence||'not stated')}</span></div>
+ <div class="card"><h3>2. Ranked differential diagnosis</h3><ol>${dif.map(x=>`<li><b>${escapeHtml(x.diagnosis||'')}</b> — ${escapeHtml(x.likelihood||'')}<br><span class="small">Supports: ${escapeHtml((x.supporting_features||[]).join('; '))}<br>Against/missing: ${escapeHtml((x.contradictory_or_missing_features||[]).join('; '))}<br>Discriminator: ${escapeHtml(x.discriminator||'')}</span></li>`).join('')||'<li>No reliable differential could be ranked.</li>'}</ol></div>
+ <div class="card"><h3>3. Must-not-miss / time-critical</h3><ul>${mm.map(x=>`<li><b>${escapeHtml(x.condition||'')}</b> — ${escapeHtml(x.why_it_matters||'')} <span class="small">Check: ${escapeHtml(x.immediate_check||'')}</span></li>`).join('')||'<li>None specifically identified.</li>'}</ul></div>
+ <div class="card"><h3>4. Suggested initial treatment</h3><ul>${tx.map(x=>`<li><b>${escapeHtml(x.priority||'')}</b> — ${escapeHtml(x.action||'')} ${x.rationale?`<span class="small">(${escapeHtml(x.rationale)})</span>`:''} ${x.dose_or_target?`<span class="small">Target/dose: ${escapeHtml(x.dose_or_target)}</span>`:''}</li>`).join('')||'<li>Stabilise with ABCDE and follow the relevant local pathway.</li>'}</ul></div>
+ <div class="card"><h3>5. Recommended investigations</h3><ul>${tests.map(x=>`<li><b>${escapeHtml(x.test||'')}</b> — ${escapeHtml(x.reason||'')} <span class="small">[${escapeHtml(x.urgency||'')}]</span></li>`).join('')||'<li>No additional test specifically recommended.</li>'}</ul></div>
+ <div class="card"><h3>6. Monitoring & disposition</h3><ul>${li(r.monitoring)}</ul><p><b>Disposition:</b> ${escapeHtml((r.disposition||{}).suggestion||'')}</p><p><b>Escalation:</b> ${escapeHtml(((r.disposition||{}).escalation_triggers)||[]).join('; ')}</p></div>
+ <div class="alert"><b>Clinical uncertainty:</b> ${escapeHtml(r.clinical_uncertainty||'AI output must be clinically verified.')}</div>
+ <div class="alert danger"><b>Doctor confirmation required:</b> This output is clinical decision support, not an autonomous diagnosis or prescription. Verify ECG, vitals, allergies, renal function, pregnancy status, contraindications, drug interactions and local protocol before treatment.</div>`;
+}
+function showAIUnavailable(msg){$('aiBox').classList.remove('hidden');$('aiBox').innerHTML=`<h2>🤖 AI Provisional Diagnosis</h2><div class="alert danger"><b>AI unavailable:</b> ${escapeHtml(msg)}<br><span class="small">The local safety screen remains available. Configure OPENAI_API_KEY on Render to enable the AI engine.</span></div>`}
+function previewECG(){const f=$('ecgAiFile').files[0]; if(!f)return; const r=new FileReader(); r.onload=()=>{$('ecgPreview').src=r.result;$('ecgPreview').classList.remove('hidden')};r.readAsDataURL(f)}
+async function runECGAI(){
+ const f=$('ecgAiFile').files[0]; if(!f){alert('Please upload a clear ECG image first.');return}
+ const reader=new FileReader(); reader.onload=async()=>{
+   $('ecgAIBox').classList.remove('hidden');$('ecgAIBox').innerHTML='<div class="alert">❤️ Analyzing ECG image…</div>';
+   const d=formData(); const body={image_data_url:reader.result,age:d.age,sex:d.sex,chief_complaint:d.chief_complaint,history:d.history,vitals:d.vitals};
+   try{const r=await fetch('/api/ai/ecg',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});const j=await r.json();if(!r.ok)throw new Error(j.error||'ECG AI unavailable');renderECGResult(j.result)}catch(e){$('ecgAIBox').innerHTML=`<div class="alert danger"><b>ECG AI unavailable:</b> ${escapeHtml(e.message)}</div>`}
+ }; reader.readAsDataURL(f);
+}
+function renderECGResult(r){
+ const q=r.image_quality||{}; const iv=r.intervals||{}; const st=r.st_segment||{};
+ $('ecgAIBox').innerHTML=`<div class="card"><h3>❤️ AI ECG Interpretation</h3><div class="alert ${q.adequate===false?'danger':'success'}"><b>Image quality:</b> ${q.adequate===false?'Limited':'Adequate'} — ${(q.limitations||[]).map(escapeHtml).join('; ')}</div><div class="aiGrid">
+ <div class="aiItem"><div class="aiTitle">Rate</div>${escapeHtml(String((r.rate_bpm||{}).value??'Not reliably measurable'))} bpm</div>
+ <div class="aiItem"><div class="aiTitle">Rhythm</div>${escapeHtml((r.rhythm||{}).interpretation||'')}</div>
+ <div class="aiItem"><div class="aiTitle">Axis</div>${escapeHtml((r.axis||{}).interpretation||'')}</div>
+ <div class="aiItem"><div class="aiTitle">Intervals</div>PR ${escapeHtml(String(iv.PR_ms??'—'))} ms · QRS ${escapeHtml(String(iv.QRS_ms??'—'))} ms · QTc ${escapeHtml(String(iv.QTc_ms??'—'))} ms</div>
+ </div><h4>ST segment / ischemia</h4><p>${escapeHtml((st.findings||[]).join('; '))}</p><p><b>Territory:</b> ${escapeHtml((st.territories||[]).join(', '))} · <b>Occlusion concern:</b> ${escapeHtml(st.STEMI_or_occlusion_concern||'none')}</p>
+ <h4>Conduction / other findings</h4><ul>${[...(r.conduction||[]),...(r.chamber_or_hypertrophy||[]),...(r.q_waves||[]),...(r.t_wave||[]),...(r.other_critical_findings||[])].map(x=>`<li>${escapeHtml(x)}</li>`).join('')||'<li>None identified.</li>'}</ul>
+ <h3>Provisional ECG diagnosis</h3><p><b>${escapeHtml(r.provisional_ecg_diagnosis||'')}</b></p><h4>Differential ECG diagnoses</h4><ul>${(r.differential_ecg_diagnoses||[]).map(x=>`<li>${escapeHtml(x)}</li>`).join('')||'<li>None.</li>'}</ul><h4>Urgent action</h4><ul>${(r.urgent_action||[]).map(x=>`<li>${escapeHtml(x)}</li>`).join('')||'<li>Correlate clinically and verify tracing.</li>'}</ul><div class="alert"><b>Uncertainty:</b> ${escapeHtml(r.uncertainty||'')}</div><div class="alert danger"><b>ECG safety:</b> Do not use AI as the sole basis for thrombolysis, cath-lab activation, antiarrhythmic therapy or discharge. A clinician must review the original ECG.</div></div>`;
+}
+function escapeHtml(s){return String(s??'').replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]))}
+function updateRiskBox(d){$('riskBox').className='alert '+(d.risk==='RED'?'danger':d.risk==='STABLE'?'success':'');$('riskBox').innerHTML=`<b>${d.risk}</b> · NEWS2 ${d.news2}<br>Selected red flags: ${d.red_flags.selected.length?d.red_flags.selected.join(', '):'None'}`}
+async function savePatient(){
+ const d=await calcAndShow();
+ const url=currentId?`/api/patients/${currentId}`:"/api/patients", method=currentId?"PUT":"POST";
+ const r=await fetch(url,{method,headers:{"Content-Type":"application/json"},body:JSON.stringify(d)});
+ const j=await r.json(); if(!r.ok)return alert(j.error||"Save failed");
+ if(!currentId)currentId=j.id; currentData=d; alert("Patient saved. Now you can attach investigations.");
+ await loadInvestigations();
+}
+function toggleInvFields(){
+ const k=$("ikind").value; const ab=["ABG","VBG"].includes(k); const gl=["RBS","Blood Ketone","Urine Ketone"].includes(k);
+ $("abgFields").classList.toggle("hidden",!ab); $("glucoseFields").classList.toggle("hidden",!gl);
+}
+async function saveInvestigation(){
+ if(!currentId){alert("Save the patient first.");return}
+ const fd=new FormData(); const kind=$("ikind").value; fd.append("kind",kind);
+ const data={note:$("inote").value};
+ if(["ABG","VBG"].includes(kind)){["ph","pco2","po2","hco3","lactate","be","na","cl","k"].forEach(id=>{if($(id).value!=="")data[id]=+$(id).value})}
+ if(kind==="RBS"&&$("rbs").value)data.rbs=+$("rbs").value;
+ if(kind==="Blood Ketone"&&$("bho").value)data.bho=+$("bho").value;
+ if(kind==="Urine Ketone")data.urine=$("urineKetone").value;
+ if(kind==="ECG")data.note=$("inote").value;
+ fd.append("data",JSON.stringify(data)); const f=$("ifile").files[0]; if(f)fd.append("file",f);
+ const r=await fetch(`/api/patients/${currentId}/investigations`,{method:"POST",body:fd}); const j=await r.json();
+ if(!r.ok)return alert(j.error||"Investigation save failed"); alert("Investigation saved to this patient.");
+ $("ifile").value="";$("inote").value="";await loadInvestigations();await calcAndShow();
+}
+async function loadInvestigations(){
+ if(!currentId)return; const r=await fetch(`/api/patients/${currentId}/investigations`); window.invCache=await r.json();
+ $("invList").innerHTML=window.invCache.length?window.invCache.map(x=>`<div class="card invest"><b>${x.kind}</b> <span class="small muted">${x.created_at}</span><br>${formatInv(x)}${x.filename?`<br><a class="filelink" target="_blank" href="/api/investigations/${x.id}/file">📎 Open ${escapeHtml(x.filename)}</a>`:""}<div class="actions no-print"><button class="btn" onclick="deleteInv(${x.id})">Delete</button></div></div>`).join(""):"<p class='muted'>No investigations saved yet.</p>";
+}
+function formatInv(x){const d=x.data||{};if(x.kind==="ABG"||x.kind==="VBG"){return `pH ${d.ph??"-"} · CO₂ ${d.pco2??"-"} · O₂ ${d.po2??"-"} · HCO₃ ${d.hco3??"-"} · Lactate ${d.lactate??"-"} · AG ${d.na&&d.cl&&d.hco3?(d.na-d.cl-d.hco3).toFixed(1):"-"} · ${escapeHtml(d.note||"")}`};if(x.kind==="RBS")return `RBS ${d.rbs??"-"} mg/dL`;if(x.kind==="Blood Ketone")return `β-hydroxybutyrate ${d.bho??"-"} mmol/L`;if(x.kind==="Urine Ketone")return `Urine ketone ${escapeHtml(d.urine||"-")}`;return escapeHtml(d.note||"Result saved.");}
+async function deleteInv(id){if(!confirm("Delete this investigation?"))return;await fetch(`/api/investigations/${id}`,{method:"DELETE"});loadInvestigations()}
+async function loadPatients(){
+ const q=encodeURIComponent($("search")?.value||""); const r=await fetch("/api/patients?q="+q);const a=await r.json();
+ $("patientList").innerHTML=a.map(x=>`<div class="patientrow"><div><b>${escapeHtml(x.name||"Unnamed")}</b> · ${escapeHtml(x.patient_code)}<br><span class="small">${escapeHtml(x.patient_type)} · ${escapeHtml(x.chief_complaint||"")}</span></div><div><span class="pill ${x.risk==="RED"?"red":x.risk==="URGENT"?"urgent":"stable"}">${x.risk}</span> <button class="btn" onclick="openPatient(${x.id})">Open</button></div></div>`).join("")||"<p class='muted'>No patients found.</p>";
+}
+async function openPatient(id){
+ const r=await fetch(`/api/patients/${id}`); currentData=await r.json();currentId=id;fillForm(currentData);show("new",document.querySelectorAll(".tabs button")[1]);renderPathway();setTimeout(()=>{const flags=currentData.red_flags?.selected||[];document.querySelectorAll("#flags input").forEach(x=>x.checked=flags.includes(x.dataset.flag));},50);await loadInvestigations();await calcAndShow();
+}
+function fillForm(d){$("code").value=d.patient_code||"";$("name").value=d.name||"";$("age").value=d.age??"";$("sex").value=d.sex||"Male";$("ptype").value=d.patient_type||"Undifferentiated/Other";$("cc").value=d.chief_complaint||"";$("history").value=d.history?.hpi||"";$("exam").value=d.examination?.focused||"";const v=d.vitals||{};["rr","spo2","sbp","hr","temp","gcs"].forEach(k=>$(k).value=v[k]??(k==="gcs"?15:""))}
+async function printReport(){const d=await calcAndShow();$("report").classList.remove("hidden");$("report").innerHTML=`<h2>ED Clinical Report</h2><p><b>Patient:</b> ${escapeHtml(d.name||"")} · ${escapeHtml(d.age||"")} · ${escapeHtml(d.sex)} · <b>Code:</b> ${escapeHtml(d.patient_code)}</p><p><b>Type:</b> ${escapeHtml(d.patient_type)} · <b>Complaint:</b> ${escapeHtml(d.chief_complaint)}</p><h3>Vitals / scores</h3><p>NEWS2: <b>${d.news2}</b> · Risk: <b>${d.risk}</b></p><p>${Object.entries(d.vitals).map(([k,v])=>`${k}: ${v||"-"}`).join(" · ")}</p><h3>History</h3><p>${escapeHtml(d.history.hpi||"")}</p><h3>Examination</h3><p>${escapeHtml(d.examination.focused||"")}</p><h3>Investigations</h3><div>${(window.invCache||[]).map(formatInv).map(x=>`<p>${x}</p>`).join("")||"None"}</div><h3>Automated clinical decision support</h3>${$("aiBox").innerHTML}`;window.print()}
+function escapeHtml(s){return String(s??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]))}
+async function loadDashboard(){const r=await fetch("/api/dashboard");const d=await r.json();$("dTotal").textContent=d.total;$("dRed").textContent=d.red;$("dUrgent").textContent=d.urgent;$("recent").innerHTML=d.recent.map(x=>`<div class="patientrow"><div><b>${escapeHtml(x.name||"Unnamed")}</b><br><span class="small">${escapeHtml(x.patient_type||"")} · ${escapeHtml(x.chief_complaint||"")}</span></div><button class="btn" onclick="openPatient(${x.id})">Open</button></div>`).join("")||"<p class='muted'>No patients yet.</p>"}
+renderPathway();toggleInvFields();loadDashboard();
+</script>
+
+<section id="diseaseScoresPanel" class="card" style="margin-top:16px">
+  <h2>🎯 Diagnosis-Specific Scores</h2>
+  <p class="muted">Only scores relevant to this presentation are shown. Missing inputs are never guessed.</p>
+  <div id="diseaseScores"></div>
+  <button type="button" onclick="runDiseaseSpecificScores()">Calculate relevant scores</button>
+</section>
+
+<script>
+async function runDiseaseSpecificScores(){
+  const payload = {
+    age: document.querySelector('[name="age"]')?.value || '',
+    complaint: document.querySelector('[name="complaint"]')?.value || document.querySelector('#complaint')?.value || '',
+    vitals: {
+      sbp: document.querySelector('[name="sbp"]')?.value || '',
+      rr: document.querySelector('[name="rr"]')?.value || '',
+      hr: document.querySelector('[name="hr"]')?.value || '',
+      gcs: document.querySelector('[name="gcs"]')?.value || ''
+    },
+    labs: {
+      bun: document.querySelector('[name="bun"]')?.value || '',
+      creatinine: document.querySelector('[name="creatinine"]')?.value || '',
+      ph: document.querySelector('[name="ph"]')?.value || '',
+      hco3: document.querySelector('[name="hco3"]')?.value || '',
+      glucose: document.querySelector('[name="rbs"]')?.value || '',
+      ketone: document.querySelector('[name="ketone"]')?.value || ''
+    }
+  };
+  const box=document.getElementById('diseaseScores');
+  box.innerHTML='<p>Calculating relevant scores…</p>';
+  try{
+    const r=await fetch('/api/disease-scores',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
+    const j=await r.json();
+    box.innerHTML=(j.scores||[]).map(s=>`
+      <div class="score-row" style="padding:10px 0;border-bottom:1px solid #ddd">
+        <strong>${s.score}</strong>: <b>${s.result}</b>
+        ${s.note?`<div class="muted">${s.note}</div>`:''}
+      </div>`).join('') || '<p>No disease-specific score was triggered. Complete the clinical presentation first.</p>';
+  }catch(e){ box.innerHTML='<p>Unable to calculate scores. Check the server connection.</p>'; }
+}
+</script>
+
+</body></html>
