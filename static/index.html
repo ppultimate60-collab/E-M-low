@@ -1,1 +1,287 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ED Flow V3 — AI Investigations</title>
+<style>
+:root{--bg:#eef3f9;--card:#fff;--ink:#14213d;--muted:#667085;--blue:#2563eb;--blue2:#4f46e5;--cyan:#0891b2;--red:#dc2626;--amber:#d97706;--green:#15803d;--line:#dce4ef;--navy:#0b1730;--shadow:0 10px 30px rgba(15,23,42,.08)}
+*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:linear-gradient(180deg,#edf4ff 0,#f6f8fc 340px,#eef3f9 100%);font-family:Inter,Arial,sans-serif;color:var(--ink)}
+header{background:linear-gradient(120deg,#08152f,#142b59 55%,#2563eb);color:#fff;padding:18px 18px;position:sticky;top:0;z-index:20;box-shadow:0 5px 22px #07152f33}header .brand{max-width:1100px;margin:auto;display:flex;align-items:center;justify-content:space-between;gap:12px}.brand-title{font-size:20px;font-weight:900;letter-spacing:-.3px}.brand-sub{font-size:11px;opacity:.75;margin-top:3px}.brand-badge{padding:7px 10px;border-radius:999px;background:#ffffff18;border:1px solid #ffffff33;font-size:11px;font-weight:800}
+.wrap{max-width:1100px;margin:auto;padding:18px}.tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:18px;background:#ffffffcc;backdrop-filter:blur(10px);padding:8px;border:1px solid #fff;border-radius:16px;box-shadow:0 5px 20px #0f172a0b}.tabs button,.btn{border:0;border-radius:11px;padding:11px 14px;font-weight:800;background:#fff;color:var(--ink);box-shadow:0 2px 7px #0000000c;cursor:pointer}.tabs button:hover,.btn:hover{transform:translateY(-1px);box-shadow:0 5px 14px #0002}.tabs button.on,.btn.primary{background:linear-gradient(135deg,var(--blue),var(--blue2));color:#fff}
+.card{background:rgba(255,255,255,.96);border:1px solid #dfe7f1;border-radius:18px;padding:18px;margin-bottom:16px;box-shadow:var(--shadow)}
+.hero{position:relative;overflow:hidden;padding:26px;background:linear-gradient(135deg,#0b1730,#193d79 62%,#2563eb);color:#fff;border:0;min-height:190px}.hero:after{content:"";position:absolute;width:230px;height:230px;border-radius:50%;right:-70px;top:-100px;background:#ffffff14;box-shadow:-80px 150px 0 20px #ffffff0b}.hero-content{position:relative;z-index:1;max-width:700px}.hero h1{margin:0 0 8px;font-size:31px;line-height:1.08;letter-spacing:-1px}.hero p{margin:0;color:#dbeafe;line-height:1.55}.hero-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}.hero .btn{background:#fff;color:#12305f}.hero .btn.primary{background:#22c55e;color:#062512}
+.dashboard-grid{display:grid;grid-template-columns:1.35fr .65fr;gap:16px;margin-top:16px}.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}.stat{padding:16px;border-radius:16px;background:linear-gradient(180deg,#fff,#f8fbff);border:1px solid var(--line);position:relative;overflow:hidden}.stat:after{content:"";position:absolute;width:65px;height:65px;border-radius:50%;right:-22px;bottom:-25px;background:#2563eb12}.stat .icon{font-size:22px}.stat .label{font-size:12px;color:var(--muted);font-weight:800;margin-top:7px}.stat .num{font-size:30px;font-weight:900;margin-top:2px}.stat.redstat .num{color:var(--red)}.stat.amberstat .num{color:var(--amber)}.stat.greenstat .num{color:var(--green)}
+.section-title{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:12px}.section-title h2,.section-title h3{margin:0}.quick-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}.quick{padding:14px;border:1px solid var(--line);border-radius:14px;background:#f8fbff;cursor:pointer}.quick:hover{border-color:#93c5fd;background:#eff6ff}.quick b{display:block}.quick span{font-size:12px;color:var(--muted)}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.grid3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}.field label{display:block;font-size:13px;font-weight:800;color:#475467;margin:0 0 6px}.field input,.field select,.field textarea{width:100%;padding:11px 12px;border:1px solid #cbd5e1;border-radius:11px;font:inherit;background:#fff;outline:none}.field input:focus,.field select:focus,.field textarea:focus{border-color:#60a5fa;box-shadow:0 0 0 3px #3b82f61a}.field textarea{min-height:90px;resize:vertical}.full{grid-column:1/-1}.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}.pill{display:inline-block;padding:6px 10px;border-radius:999px;font-size:12px;font-weight:800}.red{background:#fee2e2;color:#991b1b}.urgent{background:#fef3c7;color:#92400e}.stable{background:#dcfce7;color:#166534}.muted{color:var(--muted)}.hidden{display:none!important}.scorebox{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px}.score{padding:12px;border:1px solid var(--line);border-radius:12px;background:#fafafa}.score b{display:block;font-size:20px}.alert{padding:13px;border-radius:13px;background:#fff7ed;border:1px solid #fed7aa;margin-top:10px}.success{background:#ecfdf3;border-color:#bbf7d0}.danger{background:#fef2f2;border-color:#fecaca}.invest{border-left:5px solid var(--blue)}.filelink{display:inline-block;margin-top:6px;color:#1d4ed8;font-weight:700}.small{font-size:12px}.patientrow{display:flex;justify-content:space-between;gap:10px;align-items:center;padding:13px;border:1px solid var(--line);border-radius:13px;margin:8px 0;background:#fff}.checkgrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.check{padding:9px;border:1px solid var(--line);border-radius:10px}.check input{margin-right:7px}.feature-strip{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:16px}.feature{background:#ffffffb8;border:1px solid #dfe7f1;border-radius:14px;padding:13px}.feature .ficon{font-size:20px}.feature b{display:block;margin-top:5px;font-size:13px}.feature span{font-size:11px;color:var(--muted)}
+@media(max-width:800px){.dashboard-grid{grid-template-columns:1fr}.stats{grid-template-columns:repeat(3,1fr)}}
+@media(max-width:700px){.wrap{padding:12px}.grid,.grid3,.scorebox,.checkgrid{grid-template-columns:1fr}.stats{grid-template-columns:repeat(3,1fr);gap:7px}.stat{padding:11px}.stat .num{font-size:24px}.hero{padding:22px 18px}.hero h1{font-size:27px}.feature-strip{grid-template-columns:repeat(2,1fr)}.patientrow{align-items:flex-start;flex-direction:column}.brand-badge{display:none}}
+@media print{header,.tabs,.no-print{display:none!important}.card{box-shadow:none}.wrap{max-width:none}}
+</style>
+</head>
+<body>
+<header><div class="brand"><div><div class="brand-title">🚑 ED Flow</div><div class="brand-sub">Emergency Department • Clinical Workflow & Decision Support</div></div><div class="brand-badge">V3 • SMART ED</div></div></header>
+<div class="wrap">
+<div class="tabs no-print">
+<button class="on" onclick="show('dash',this)">🏠 Dashboard</button>
+<button onclick="newPatient()">➕ New Patient</button>
+<button onclick="show('patients',this);loadPatients()">📂 Previous Patients</button>
+<button onclick="show('about',this)">ℹ️ About</button>
+</div>
 
+<section id="dash">
+<div class="card hero">
+ <div class="hero-content">
+  <div class="brand-badge" style="display:inline-block;margin-bottom:12px">🚑 EMERGENCY DEPARTMENT • SMART WORKFLOW</div>
+  <h1>ED Flow</h1>
+  <p>One workspace for triage, ABCDE assessment, NEWS2, investigations, clinical decision support and patient reports.</p>
+  <div class="hero-actions no-print">
+   <button class="btn primary" onclick="newPatient()">➕ Register New Patient</button>
+   <button class="btn" onclick="show('patients',document.querySelectorAll('.tabs button')[2]);loadPatients()">📂 Previous Patients</button>
+  </div>
+ </div>
+</div>
+<div class="stats" style="margin-top:16px">
+ <div class="stat"><div class="icon">👥</div><div class="label">TOTAL PATIENTS</div><div class="num" id="dTotal">0</div></div>
+ <div class="stat redstat"><div class="icon">🚨</div><div class="label">RED / HIGH CONCERN</div><div class="num" id="dRed">0</div></div>
+ <div class="stat amberstat"><div class="icon">⚠️</div><div class="label">URGENT</div><div class="num" id="dUrgent">0</div></div>
+</div>
+<div class="feature-strip">
+ <div class="feature"><div class="ficon">🩺</div><b>ABCDE + NEWS2</b><span>Rapid risk assessment</span></div>
+ <div class="feature"><div class="ficon">🧪</div><b>ABG / VBG / RBS</b><span>Patient-linked investigations</span></div>
+ <div class="feature"><div class="ficon">❤️</div><b>ECG</b><span>Upload & document</span></div>
+ <div class="feature"><div class="ficon">🤖</div><b>AI SUPPORT</b><span>Diagnosis & treatment support</span></div>
+</div>
+<div class="dashboard-grid">
+ <div class="card">
+  <div class="section-title"><h2>🕒 Recent Patients</h2><button class="btn no-print" onclick="show('patients',document.querySelectorAll('.tabs button')[2]);loadPatients()">View all</button></div>
+  <div id="recent"></div>
+ </div>
+ <div class="card">
+  <div class="section-title"><h3>⚡ Quick Actions</h3></div>
+  <div class="quick-grid">
+   <div class="quick" onclick="newPatient()"><b>➕ New Patient</b><span>Start ED assessment</span></div>
+   <div class="quick" onclick="show('patients',document.querySelectorAll('.tabs button')[2]);loadPatients()"><b>📂 Patient Data</b><span>Open previous records</span></div>
+   <div class="quick" onclick="show('about',document.querySelectorAll('.tabs button')[3])"><b>ℹ️ About ED Flow</b><span>Features & safety</span></div>
+   <div class="quick" onclick="newPatient();setTimeout(()=>document.getElementById('ikind').scrollIntoView({behavior:'smooth'}),300)"><b>🧪 Investigations</b><span>ABG / ECG / glucose</span></div>
+  </div>
+ </div>
+</div>
+</section>
+
+<section id="new" class="hidden">
+<div class="card">
+<h2>Patient Assessment</h2>
+<div class="grid">
+<div class="field"><label>Patient code</label><input id="code" placeholder="Auto if blank"></div>
+<div class="field"><label>Name / Identifier</label><input id="name"></div>
+<div class="field"><label>Age</label><input id="age" type="number" min="0"></div>
+<div class="field"><label>Sex</label><select id="sex"><option>Male</option><option>Female</option><option>Other</option></select></div>
+<div class="field"><label>Patient type</label><select id="ptype" onchange="renderPathway()">
+<option>Trauma</option><option>Chest Pain / ACS</option><option>Asthma/COPD/Breathlessness</option><option>Fever/Sepsis</option><option>Stroke/Neurology</option><option>DKA/HHS/Metabolic</option><option>GI Bleed</option><option>Abdominal Pain</option><option>Poisoning/Toxicology</option><option>Seizure</option><option>Undifferentiated/Other</option>
+</select></div>
+<div class="field full"><label>Chief complaint</label><input id="cc"></div>
+<div class="field full"><label>History / HPI</label><textarea id="history"></textarea></div>
+<div class="field full"><label>Focused examination</label><textarea id="exam"></textarea></div>
+</div>
+
+<h3>Vitals / ABCDE</h3>
+<div class="grid3">
+<div class="field"><label>RR /min</label><input id="rr" type="number"></div>
+<div class="field"><label>SpO₂ %</label><input id="spo2" type="number"></div>
+<div class="field"><label>SBP mmHg</label><input id="sbp" type="number"></div>
+<div class="field"><label>HR /min</label><input id="hr" type="number"></div>
+<div class="field"><label>Temperature °C</label><input id="temp" type="number" step="0.1"></div>
+<div class="field"><label>GCS</label><input id="gcs" type="number" value="15" min="3" max="15"></div>
+</div>
+
+<h3>🚨 Disease-specific red flags</h3>
+<div id="flags" class="checkgrid"></div>
+<div id="riskBox" class="alert"></div>
+
+<div class="actions no-print">
+<button class="btn primary" onclick="savePatient()">💾 Save / Update Patient</button>
+<button class="btn" onclick="calcAndShow()">🧮 Calculate Scores & AI Assessment</button>
+<button class="btn" onclick="printReport()">🖨️ Report / PDF</button>
+</div>
+</div>
+
+<div id="aiBox" class="card hidden"></div>
+
+<div class="card">
+<h2>🧪 Investigations for this patient</h2>
+<p class="muted">Attach ABG/VBG, ECG, RBS and ketone results to this specific patient. Images/PDFs up to 10 MB are supported in this demo.</p>
+<div class="grid">
+<div class="field"><label>Investigation type</label><select id="ikind" onchange="toggleInvFields()">
+<option>ABG</option><option>VBG</option><option>ECG</option><option>RBS</option><option>Blood Ketone</option><option>Urine Ketone</option><option>Other</option>
+</select></div>
+<div class="field"><label>Upload image/PDF (optional)</label><input id="ifile" type="file" accept="image/*,.pdf"></div>
+<div id="abgFields" class="full grid3">
+<div class="field"><label>pH</label><input id="ph" type="number" step="0.01"></div>
+<div class="field"><label>PaCO₂ / PvCO₂ mmHg</label><input id="pco2" type="number" step="0.1"></div>
+<div class="field"><label>PaO₂ / PvO₂ mmHg</label><input id="po2" type="number" step="0.1"></div>
+<div class="field"><label>HCO₃⁻ mmol/L</label><input id="hco3" type="number" step="0.1"></div>
+<div class="field"><label>Lactate mmol/L</label><input id="lactate" type="number" step="0.1"></div>
+<div class="field"><label>Base excess</label><input id="be" type="number" step="0.1"></div>
+<div class="field"><label>Na⁺ mmol/L</label><input id="na" type="number" step="0.1"></div>
+<div class="field"><label>Cl⁻ mmol/L</label><input id="cl" type="number" step="0.1"></div>
+<div class="field"><label>K⁺ mmol/L</label><input id="k" type="number" step="0.1"></div>
+</div>
+<div id="glucoseFields" class="full hidden grid3">
+<div class="field"><label>RBS mg/dL</label><input id="rbs" type="number" step="1"></div>
+<div class="field"><label>β-hydroxybutyrate mmol/L</label><input id="bho" type="number" step="0.1"></div>
+<div class="field"><label>Urine ketone</label><select id="urineKetone"><option>Not tested</option><option>Negative</option><option>Trace</option><option>1+</option><option>2+</option><option>3+</option></select></div>
+</div>
+<div class="field full"><label>Investigation note</label><textarea id="inote" placeholder="ECG interpretation / other result / lab note"></textarea></div>
+</div>
+<div class="actions no-print"><button class="btn primary" onclick="saveInvestigation()">➕ Save Investigation</button></div>
+<div id="invList"></div>
+</div>
+
+<div id="report" class="card hidden"></div>
+</section>
+
+<section id="patients" class="card hidden">
+<h2>Previous Patients</h2>
+<div class="field"><label>Search</label><input id="search" oninput="loadPatients()" placeholder="Name, code, complaint..."></div>
+<div id="patientList"></div>
+</section>
+
+<section id="about" class="card hidden">
+<h2>ED Flow V3</h2>
+<p>This version adds patient-linked investigations and automated clinical decision support.</p>
+<ul><li>ABG/VBG image + structured values</li><li>ECG upload + note</li><li>RBS and ketone tracking</li><li>Automatic scores and safety alerts</li><li>Automated treatment-support suggestions</li><li>Patient-specific investigation timeline</li><li>Printable report</li></ul>
+<div class="alert danger"><b>Clinical safety:</b> This is a prototype. Treatment suggestions are decision support, not autonomous prescribing. Verify all results, doses, contraindications and local protocols. Do not use unvalidated output as the sole basis for patient care.</div>
+</section>
+</div>
+
+<script>
+let currentId=null, currentData=null, flagsMap={
+"Trauma":["Airway threat","Major hemorrhage","GCS ≤8","Shock / hypotension","Chest trauma / tension pneumothorax","Pelvic instability"],
+"Chest Pain / ACS":["Ongoing severe chest pain","ST-elevation / STEMI concern","Shock / hypotension","Malignant arrhythmia","Syncope"],
+"Asthma/COPD/Breathlessness":["Silent chest","Severe work of breathing","Exhaustion / altered sensorium","SpO₂ dangerously low","Hypercapnia concern"],
+"Fever/Sepsis":["Hypotension","Altered mental status","Mottled / poor perfusion","High lactate concern","Suspected source with organ dysfunction"],
+"Stroke/Neurology":["Airway compromise","Reduced GCS","New focal deficit","Seizure","Last-known-well concern"],
+"DKA/HHS/Metabolic":["Hypotension / shock","Altered sensorium","Severe acidosis concern","K⁺ abnormality","Persistent vomiting"],
+"GI Bleed":["Shock","Active hematemesis","Melena with instability","Syncope","Severe anemia concern"],
+"Abdominal Pain":["Peritonitis","Shock","GI bleed","Pain out of proportion","Pregnancy concern"],
+"Poisoning/Toxicology":["Airway threat","Reduced GCS","Seizure","Arrhythmia / wide QRS","Shock"],
+"Seizure":["Status epilepticus","Airway compromise","Persistent low GCS","Hypoglycemia concern","Focal deficit"],
+"Undifferentiated/Other":["Airway threat","Breathing failure","Circulatory shock","Altered mental status","Rapid deterioration"]
+};
+
+function $(id){return document.getElementById(id)}
+function show(id,btn){
+  ["dash","new","patients","about"].forEach(x=>$(x).classList.add("hidden"));
+  $(id).classList.remove("hidden");
+  document.querySelectorAll(".tabs button").forEach(b=>b.classList.remove("on"));
+  if(btn)btn.classList.add("on");
+}
+function newPatient(){currentId=null;currentData=null;clearForm();show("new",document.querySelectorAll(".tabs button")[1]);renderPathway();toggleInvFields();$("aiBox").classList.add("hidden");$("invList").innerHTML=""}
+function renderPathway(){
+  const p=$("ptype").value; $("flags").innerHTML=(flagsMap[p]||[]).map((x,i)=>`<label class="check"><input type="checkbox" data-flag="${x}"> ${x}</label>`).join("");
+}
+function clearForm(){
+  ["code","name","age","cc","history","exam","rr","spo2","sbp","hr","temp"].forEach(id=>$(id).value="");
+  $("gcs").value=15;$("sex").value="Male";$("ptype").value="Undifferentiated/Other";
+}
+function news2(v){
+ let s=0,n=+v.rr,sp=+v.spo2,sy=+v.sbp,h=+v.hr,t=+v.temp,g=+v.gcs;
+ if(n){if(n<=8)s+=3;else if(n<=11)s+=1;else if(n<=20)s+=0;else if(n<=24)s+=2;else s+=3}
+ if(sp){if(sp<=91)s+=3;else if(sp<=93)s+=2;else if(sp<=95)s+=1}
+ if(sy){if(sy<=90)s+=3;else if(sy<=100)s+=2;else if(sy<=110)s+=1;else if(sy>=220)s+=3}
+ if(h){if(h<=40)s+=3;else if(h<=50)s+=1;else if(h<=90)s+=0;else if(h<=110)s+=1;else if(h<=130)s+=2;else s+=3}
+ if(t){if(t<=35)s+=3;else if(t<=36)s+=1;else if(t<=38)s+=0;else if(t<=39)s+=1;else s+=2}
+ if(g<15)s+=3; return s;
+}
+function selectedFlags(){return [...document.querySelectorAll("#flags input:checked")].map(x=>x.dataset.flag)}
+function riskOf(score,flags){if(flags.length||score>=7)return "RED";if(score>=5)return "URGENT";return "STABLE"}
+function formData(){
+ const v={rr:$("rr").value,spo2:$("spo2").value,sbp:$("sbp").value,hr:$("hr").value,temp:$("temp").value,gcs:$("gcs").value};
+ const fl=selectedFlags(), sc=news2(v), risk=riskOf(sc,fl);
+ return {patient_code:$("code").value,name:$("name").value,age:$("age").value||null,sex:$("sex").value,patient_type:$("ptype").value,chief_complaint:$("cc").value,
+ history:{hpi:$("history").value},examination:{focused:$("exam").value},vitals:v,red_flags:{selected:fl},news2:sc,risk,provisional_diagnosis:($("aiBox").dataset.dx||"")};
+}
+function calcAndShow(){
+ const d=formData(); let dx=[],must=[],tx=[],why=[],missing=[];
+ const type=d.patient_type, h=(d.history.hpi||"").toLowerCase(), cc=(d.chief_complaint||"").toLowerCase();
+ if(type==="Chest Pain / ACS"){dx.push("ACS / myocardial ischemia");must.push("STEMI / acute coronary occlusion");tx.push("Obtain/review 12-lead ECG promptly; repeat if symptoms evolve. Check troponin per local ACS pathway. Consider monitored care and cardiology activation if STEMI/instability.");why.push("Chest-pain pathway selected");}
+ if(type==="DKA/HHS/Metabolic"){dx.push("DKA/HHS or other hyperglycemic emergency");must.push("Severe metabolic acidosis, potassium abnormality and cerebral complication");tx.push("Assess volume status and start local hyperglycemic-emergency pathway. Check potassium before/while insulin therapy and identify precipitating cause.");}
+ if(type==="Fever/Sepsis"){dx.push("Sepsis / serious infection");must.push("Septic shock / organ dysfunction");tx.push("Repeat ABCDE, obtain appropriate cultures/tests without delaying indicated treatment, assess perfusion/lactate and use local sepsis bundle.");}
+ if(type==="Asthma/COPD/Breathlessness"){dx.push("Acute obstructive airway disease / respiratory failure");must.push("Impending respiratory failure");tx.push("Oxygen target according to disease context, bronchodilator pathway, assess fatigue/hypercapnia and consider NIV/intubation when indicated.");}
+ if(type==="Trauma"){dx.push("Major trauma / injury requiring structured trauma assessment");must.push("Occult hemorrhage, airway or tension pneumothorax");tx.push("Continue trauma primary survey, hemorrhage control, appropriate imaging and blood-product pathway according to injury severity.");}
+ if(type==="Stroke/Neurology"){dx.push("Acute stroke syndrome");must.push("Intracranial hemorrhage / large-vessel occlusion");tx.push("Record last-known-well, glucose, NIHSS where applicable and activate local stroke pathway with urgent brain/vascular imaging.");}
+ if(type==="GI Bleed"){dx.push("Acute GI bleeding");must.push("Hemorrhagic shock");tx.push("Large-bore access, blood count/crossmatch, hemodynamic resuscitation and urgent GI/surgical escalation as indicated.");}
+ if(type==="Seizure"){dx.push("Acute seizure / status risk");must.push("Status epilepticus or structural CNS cause");tx.push("Check glucose immediately, protect airway, treat ongoing seizure per local status pathway and investigate reversible causes.");}
+ if(type==="Poisoning/Toxicology"){dx.push("Toxicologic emergency");must.push("Airway/respiratory failure, shock or malignant arrhythmia");tx.push("Identify agent/time/dose, continuous monitoring and use poison-center/local antidote protocols.");}
+ if(!dx.length)dx.push("Undifferentiated emergency — needs focused reassessment");
+ if(!d.vitals.rr||!d.vitals.spo2||!d.vitals.sbp||!d.vitals.hr)missing.push("Complete vital signs");
+ if(!d.chief_complaint)missing.push("Chief complaint");
+ const inv=window.invCache||[];
+ const abg=inv.find(x=>x.kind==="ABG"||x.kind==="VBG"), ecg=inv.find(x=>x.kind==="ECG");
+ let acid="";
+ if(abg&&abg.data){const p=+abg.data.ph,b=+abg.data.hco3,pc=+abg.data.pco2,la=+abg.data.lactate,na=+abg.data.na,cl=+abg.data.cl;if(p){if(p<7.35)acid="Acidemia";else if(p>7.45)acid="Alkalemia";else acid="Near-normal pH";} if(b&&pc){if(p<7.35&&b<22)acid+=" with metabolic acidosis";if(p<7.35&&pc>45)acid+=" with respiratory acidosis";if(p>7.45&&b>26)acid+=" with metabolic alkalosis";if(p>7.45&&pc<35)acid+=" with respiratory alkalosis";}if(la>=2)acid+=`; lactate ${la} mmol/L is elevated`;if(na&&cl&&b){const ag=na-cl-b;acid+=`; anion gap ≈ ${ag.toFixed(1)} mmol/L`;}}
+ if(acid)dx.push("Gas interpretation: "+acid);
+ if(ecg&&ecg.data&&ecg.data.note)dx.push("ECG note: "+ecg.data.note);
+ if(!abg)missing.push("ABG/VBG if acid-base or respiratory failure is suspected");
+ if(type==="Chest Pain / ACS"&&!ecg)missing.push("ECG result/upload");
+ const ket=inv.find(x=>x.kind==="Blood Ketone"),rbs=inv.find(x=>x.kind==="RBS");
+ if(type==="DKA/HHS/Metabolic"&&!rbs)missing.push("RBS/glucose");
+ if(type==="DKA/HHS/Metabolic"&&!ket)missing.push("Blood ketone where available");
+ $("aiBox").dataset.dx=dx[0]||"";
+ $("aiBox").classList.remove("hidden");
+ $("aiBox").innerHTML=`<h2>🤖 Automated Clinical Decision Support</h2>
+ <div class="alert ${d.risk==="RED"?"danger":d.risk==="URGENT"?"":"success"}"><b>Risk: ${d.risk}</b> — NEWS2 ${d.news2}. ${d.red_flags.selected.length?`Red flags: ${d.red_flags.selected.join(", ")}`:"No selected disease-specific red flag."}</div>
+ <h3>Most likely / working diagnosis</h3><ul>${dx.map(x=>`<li>${x}</li>`).join("")}</ul>
+ <h3>Must-not-miss</h3><ul>${must.map(x=>`<li>${x}</li>`).join("")||"<li>Continue ABCDE and reassess for time-critical causes.</li>"}</ul>
+ <h3>Suggested initial management</h3><ul>${tx.map(x=>`<li>${x}</li>`).join("")}</ul>
+ <h3>Missing / recommended information</h3><ul>${missing.map(x=>`<li>${x}</li>`).join("")||"<li>No major missing item detected from entered fields.</li>"}</ul>
+ <div class="alert"><b>Safety:</b> This is automated decision support, not an autonomous prescription. Confirm diagnosis, contraindications, dosing, allergies and local protocol before treatment.</div>`;
+ updateRiskBox(d); return d;
+}
+function updateRiskBox(d){$("riskBox").className="alert "+(d.risk==="RED"?"danger":d.risk==="STABLE"?"success":"");$("riskBox").innerHTML=`<b>${d.risk}</b> · NEWS2 ${d.news2}<br>Selected red flags: ${d.red_flags.selected.length?d.red_flags.selected.join(", "):"None"}`}
+async function savePatient(){
+ const d=calcAndShow();
+ const url=currentId?`/api/patients/${currentId}`:"/api/patients", method=currentId?"PUT":"POST";
+ const r=await fetch(url,{method,headers:{"Content-Type":"application/json"},body:JSON.stringify(d)});
+ const j=await r.json(); if(!r.ok)return alert(j.error||"Save failed");
+ if(!currentId)currentId=j.id; currentData=d; alert("Patient saved. Now you can attach investigations.");
+ await loadInvestigations();
+}
+function toggleInvFields(){
+ const k=$("ikind").value; const ab=["ABG","VBG"].includes(k); const gl=["RBS","Blood Ketone","Urine Ketone"].includes(k);
+ $("abgFields").classList.toggle("hidden",!ab); $("glucoseFields").classList.toggle("hidden",!gl);
+}
+async function saveInvestigation(){
+ if(!currentId){alert("Save the patient first.");return}
+ const fd=new FormData(); const kind=$("ikind").value; fd.append("kind",kind);
+ const data={note:$("inote").value};
+ if(["ABG","VBG"].includes(kind)){["ph","pco2","po2","hco3","lactate","be","na","cl","k"].forEach(id=>{if($(id).value!=="")data[id]=+$(id).value})}
+ if(kind==="RBS"&&$("rbs").value)data.rbs=+$("rbs").value;
+ if(kind==="Blood Ketone"&&$("bho").value)data.bho=+$("bho").value;
+ if(kind==="Urine Ketone")data.urine=$("urineKetone").value;
+ if(kind==="ECG")data.note=$("inote").value;
+ fd.append("data",JSON.stringify(data)); const f=$("ifile").files[0]; if(f)fd.append("file",f);
+ const r=await fetch(`/api/patients/${currentId}/investigations`,{method:"POST",body:fd}); const j=await r.json();
+ if(!r.ok)return alert(j.error||"Investigation save failed"); alert("Investigation saved to this patient.");
+ $("ifile").value="";$("inote").value="";await loadInvestigations();calcAndShow();
+}
+async function loadInvestigations(){
+ if(!currentId)return; const r=await fetch(`/api/patients/${currentId}/investigations`); window.invCache=await r.json();
+ $("invList").innerHTML=window.invCache.length?window.invCache.map(x=>`<div class="card invest"><b>${x.kind}</b> <span class="small muted">${x.created_at}</span><br>${formatInv(x)}${x.filename?`<br><a class="filelink" target="_blank" href="/api/investigations/${x.id}/file">📎 Open ${escapeHtml(x.filename)}</a>`:""}<div class="actions no-print"><button class="btn" onclick="deleteInv(${x.id})">Delete</button></div></div>`).join(""):"<p class='muted'>No investigations saved yet.</p>";
+}
+function formatInv(x){const d=x.data||{};if(x.kind==="ABG"||x.kind==="VBG"){return `pH ${d.ph??"-"} · CO₂ ${d.pco2??"-"} · O₂ ${d.po2??"-"} · HCO₃ ${d.hco3??"-"} · Lactate ${d.lactate??"-"} · AG ${d.na&&d.cl&&d.hco3?(d.na-d.cl-d.hco3).toFixed(1):"-"} · ${escapeHtml(d.note||"")}`};if(x.kind==="RBS")return `RBS ${d.rbs??"-"} mg/dL`;if(x.kind==="Blood Ketone")return `β-hydroxybutyrate ${d.bho??"-"} mmol/L`;if(x.kind==="Urine Ketone")return `Urine ketone ${escapeHtml(d.urine||"-")}`;return escapeHtml(d.note||"Result saved.");}
+async function deleteInv(id){if(!confirm("Delete this investigation?"))return;await fetch(`/api/investigations/${id}`,{method:"DELETE"});loadInvestigations()}
+async function loadPatients(){
+ const q=encodeURIComponent($("search")?.value||""); const r=await fetch("/api/patients?q="+q);const a=await r.json();
+ $("patientList").innerHTML=a.map(x=>`<div class="patientrow"><div><b>${escapeHtml(x.name||"Unnamed")}</b> · ${escapeHtml(x.patient_code)}<br><span class="small">${escapeHtml(x.patient_type)} · ${escapeHtml(x.chief_complaint||"")}</span></div><div><span class="pill ${x.risk==="RED"?"red":x.risk==="URGENT"?"urgent":"stable"}">${x.risk}</span> <button class="btn" onclick="openPatient(${x.id})">Open</button></div></div>`).join("")||"<p class='muted'>No patients found.</p>";
+}
+async function openPatient(id){
+ const r=await fetch(`/api/patients/${id}`); currentData=await r.json();currentId=id;fillForm(currentData);show("new",document.querySelectorAll(".tabs button")[1]);renderPathway();setTimeout(()=>{const flags=currentData.red_flags?.selected||[];document.querySelectorAll("#flags input").forEach(x=>x.checked=flags.includes(x.dataset.flag));},50);await loadInvestigations();calcAndShow();
+}
+function fillForm(d){$("code").value=d.patient_code||"";$("name").value=d.name||"";$("age").value=d.age??"";$("sex").value=d.sex||"Male";$("ptype").value=d.patient_type||"Undifferentiated/Other";$("cc").value=d.chief_complaint||"";$("history").value=d.history?.hpi||"";$("exam").value=d.examination?.focused||"";const v=d.vitals||{};["rr","spo2","sbp","hr","temp","gcs"].forEach(k=>$(k).value=v[k]??(k==="gcs"?15:""))}
+function printReport(){const d=calcAndShow();$("report").classList.remove("hidden");$("report").innerHTML=`<h2>ED Clinical Report</h2><p><b>Patient:</b> ${escapeHtml(d.name||"")} · ${escapeHtml(d.age||"")} · ${escapeHtml(d.sex)} · <b>Code:</b> ${escapeHtml(d.patient_code)}</p><p><b>Type:</b> ${escapeHtml(d.patient_type)} · <b>Complaint:</b> ${escapeHtml(d.chief_complaint)}</p><h3>Vitals / scores</h3><p>NEWS2: <b>${d.news2}</b> · Risk: <b>${d.risk}</b></p><p>${Object.entries(d.vitals).map(([k,v])=>`${k}: ${v||"-"}`).join(" · ")}</p><h3>History</h3><p>${escapeHtml(d.history.hpi||"")}</p><h3>Examination</h3><p>${escapeHtml(d.examination.focused||"")}</p><h3>Investigations</h3><div>${(window.invCache||[]).map(formatInv).map(x=>`<p>${x}</p>`).join("")||"None"}</div><h3>Automated clinical decision support</h3>${$("aiBox").innerHTML}`;window.print()}
+function escapeHtml(s){return String(s??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]))}
+async function loadDashboard(){const r=await fetch("/api/dashboard");const d=await r.json();$("dTotal").textContent=d.total;$("dRed").textContent=d.red;$("dUrgent").textContent=d.urgent;$("recent").innerHTML=d.recent.map(x=>`<div class="patientrow"><div><b>${escapeHtml(x.name||"Unnamed")}</b><br><span class="small">${escapeHtml(x.patient_type||"")} · ${escapeHtml(x.chief_complaint||"")}</span></div><button class="btn" onclick="openPatient(${x.id})">Open</button></div>`).join("")||"<p class='muted'>No patients yet.</p>"}
+renderPathway();toggleInvFields();loadDashboard();
+</script>
+</body></html>
